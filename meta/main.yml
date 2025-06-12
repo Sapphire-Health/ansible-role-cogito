@@ -1,0 +1,11 @@
+---
+galaxy_info:
+  license: MIT
+  min_ansible_version: "2.10"
+  role_name: cogito
+  author: Lyas Spiehler
+  description: Ansible role for provisioning Cogito servers
+  company: Sapphire Health
+# collections: []
+# dependencies: []
+...
