@@ -1,3 +1,4 @@
+# configure reg settings for TCP per Epic specs - powershell commands immediately below
 ---
 - name: Add tags to all tasks
   tags:
@@ -16,8 +17,5 @@
       ansible.windows.win_regedit:
         path: HKLM:\SYSTEM\CurrentControlSet\services\tcpip\Parameters
         name: TcpTimedWaitDelay
-        data: '{{ cogito_tcptimedwaitdelay }}'
+        data: "{{ cogito_tcptimedwaitdelay }}"
         type: dword
-
-
-# configure reg settings for TCP per Epic specs - powershell commands immediately below

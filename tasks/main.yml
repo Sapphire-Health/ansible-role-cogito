@@ -1,0 +1,8 @@
+---
+- name: TCP Registry Settings
+  ansible.builtin.include_tasks:
+    file: tcpregistry.yml
+  tags:
+    - os
+    - registry
+    - tcp
