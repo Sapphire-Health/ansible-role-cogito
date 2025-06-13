@@ -1,0 +1,23 @@
+---
+- name: Add tags to all tasks
+  tags:
+    - os
+    - registry
+    - tcp
+  block:
+    - name: TCP KeepAlive
+      ansible.windows.win_regedit:
+        path: HKLM:\SYSTEM\CurrentControlSet\services\tcpip\Parameters
+        name: KeepAliveTime
+        data: "{{ cogito_keepalivetime }}"
+        type: dword
+
+    - name: TCP Timeout Delay
+      ansible.windows.win_regedit:
+        path: HKLM:\SYSTEM\CurrentControlSet\services\tcpip\Parameters
+        name: TcpTimedWaitDelay
+        data: '{{ cogito_tcptimedwaitdelay }}'
+        type: dword
+
+
+# configure reg settings for TCP per Epic specs - powershell commands immediately below
