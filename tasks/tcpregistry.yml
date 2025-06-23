@@ -5,6 +5,8 @@
     - os
     - registry
     - tcp
+    - clarity
+    - caboodle
   block:
     - name: TCP KeepAlive
       ansible.windows.win_regedit:

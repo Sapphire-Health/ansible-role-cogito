@@ -1,0 +1,30 @@
+# configure windows firewall for Caboodle per Epic specs
+# note 1 - redundant IF we always disable the firewall service
+# note 2 - does not address NSG
+---
+- name: Add tags to all tasks
+  tags:
+    - os
+    - firewall
+    - caboodle
+  block:
+    - name: DAC Port
+      community.windows.win_firewall_rule:
+        action: allow
+        direction: in
+        enabled: true
+        name: SQL DAC Inbound allow
+        localip: any
+        localport: 1434
+        protocol: tcp
+        remoteport: any
+    - name: Execution Service
+      community.windows.win_firewall_rule:
+        action: allow
+        direction: in
+        enabled: true
+        name: Warehouse Execution Service Inbound Allow
+        localip: any
+        localport: 29987-30987
+        protocol: tcp
+        remoteport: any

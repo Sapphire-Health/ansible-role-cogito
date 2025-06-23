@@ -6,3 +6,12 @@
     - os
     - registry
     - tcp
+    - clarity
+    - caboodle
+- name: Open Caboodle Firewall
+  ansible.builtin.include_tasks:
+    file: firewallcaboodle.yml
+  tags:
+    - os
+    - firewall
+    - caboodle
