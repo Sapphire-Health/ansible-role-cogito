@@ -1,0 +1,21 @@
+# Install .NET 4.7.2 or higher and its features.
+# currently incomplete - emailed MinYoung 6.23.2025 to ask if Kuiper does this anyway
+# use ansible.windows.win_feature module: https://docs.ansible.com/ansible/latest/collections/ansible/windows/win_feature_module.html
+# Windows Server 2019 and up includes 4.7.2 or higher
+---
+- name: Add tags to all tasks
+  tags:
+    - os
+    - caboodle
+  block:
+    - name: Install .NET 4.7.2
+      aansible.windows.win_feature:
+        path: HKLM:\SYSTEM\CurrentControlSet\services\tcpip\Parameters
+        name: KeepAliveTime
+        data: "{{ cogito_keepalivetime }}"
+        type: dword
+    # - name: EXAMPLE ---- Install NET-Framework-Core from file
+    #   ansible.windows.win_feature:
+    #   name: NET-Framework-Core
+    #   source: C:\Temp\iso\sources\sxs
+    #   state: present
