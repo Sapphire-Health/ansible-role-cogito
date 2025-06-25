@@ -37,3 +37,10 @@
     - os
     - caboodle
     - clarity
+- name: Grant User privileges
+  ansible.builtin.include_tasks:
+    file: cogitousersos.yml
+  tags:
+    - os
+    - caboodle
+    - clarity

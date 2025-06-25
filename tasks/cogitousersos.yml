@@ -1,0 +1,41 @@
+# grant OS privileges needed for Cogito
+# need to add logic to set & feed in the correct / different user accounts
+# consider this - make the variables generic. define the specific user on a host variable (define variable file with fqdn for relevant host)
+---
+- name: Add tags to all tasks
+  tags:
+    - os
+    - clarity
+    - caboodle
+  block:
+    - name: Log on as a service
+      ansible.windows.win_user_right:
+        name: SeServiceLogonRight
+        users:
+          - "{{ clarity_user_sqlengine }}"
+          - "{{ clarity_user_sqlagent }}"
+        action: add
+
+    - name: Lock pages in memory
+      ansible.windows.win_user_right:
+        name: SeServiceLogonRight
+        users:
+          - "{{ clarity_user_sqlengine }}"
+          - "{{ clarity_user_sqlagent }}"
+        action: add
+
+    - name: Perform volume maintenance tasks
+      ansible.windows.win_user_right:
+        name: SeManageVolumePrivilege
+        users:
+          - "{{ clarity_user_sqlengine }}"
+          - "{{ clarity_user_sqlagent }}"
+        action: add
+
+    - name: Replace a process level token
+      ansible.windows.win_user_right:
+        name: SeAssignPrimaryTokenPrivilege
+        users:
+          - "{{ clarity_user_sqlengine }}"
+          - "{{ clarity_user_sqlagent }}"
+        action: add

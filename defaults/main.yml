@@ -1,4 +1,8 @@
 cogito_keepalivetime: 300000
 cogito_tcptimedwaitdelay: 30
 cogito_pagefilesize: 32768
-
+clarity_user_sqlengine: demouser
+clarity_user_sqlagent: demouser
+caboodle_user_sqlengine: demouser
+caboodle_user_sqlagent: demouser
+caboodle_user_warehouse: demouser

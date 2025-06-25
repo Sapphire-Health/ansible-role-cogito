@@ -1,5 +1,6 @@
 # Verify Kernel-only memory dump is configured
 # Epic recommends 32GB initial and max size, with manual increase as needed
+# look into use of override: false
 ---
 - name: Add tags to all tasks
   tags:
