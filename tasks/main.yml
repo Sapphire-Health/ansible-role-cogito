@@ -30,3 +30,10 @@
     - os
     - caboodle
     - clarity
+- name: Disable Memory Pressure Protection
+  ansible.builtin.include_tasks:
+    file: disablempp.yml
+  tags:
+    - os
+    - caboodle
+    - clarity

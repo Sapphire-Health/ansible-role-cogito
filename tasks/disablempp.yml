@@ -1,0 +1,19 @@
+# Disable Memory Pressure Protection (MPP)
+# especially need to verify this one. Not clear it works; although the task succeeds, I'm not confident this is a real/effective reg key to be using.
+# original syntax - netsh int tcp set security mpp=disabled
+# https://support.microsoft.com/en-us/topic/description-of-the-new-memory-pressure-protection-feature-for-tcp-stack-749c1746-ba10-ec18-d61a-bbdabbc403fc
+---
+- name: Add tags to all tasks
+  tags:
+    - os
+    - registry
+    - tcp
+    - clarity
+    - caboodle
+  block:
+    - name: MPP
+      ansible.windows.win_regedit:
+        path: HKLM:\SYSTEM\CurrentControlSet\services\tcpip\Parameters
+        name: EnableMPP
+        data: 0
+        type: dword
