@@ -1,0 +1,11 @@
+# enable high performance power plan
+---
+- name: Add tags to all tasks
+  tags:
+    - os
+    - caboodle
+    - clarity
+  block:
+    - name: Set High Performance Power Plan
+      community.windows.win_power_plan:
+        name: high performance

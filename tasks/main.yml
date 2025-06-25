@@ -1,3 +1,4 @@
+# does not include NETfeatures
 ---
 - name: TCP Registry Settings
   ansible.builtin.include_tasks:
@@ -15,3 +16,17 @@
     - os
     - firewall
     - caboodle
+- name: Set High Performance Power Plan
+  ansible.builtin.include_tasks:
+    file: hpp.yml
+  tags:
+    - os
+    - caboodle
+    - clarity
+- name: Verify Kernel-only dump
+  ansible.builtin.include_tasks:
+    file: verifykerneldump.yml
+  tags:
+    - os
+    - caboodle
+    - clarity

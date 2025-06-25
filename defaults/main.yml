@@ -1,2 +1,4 @@
 cogito_keepalivetime: 300000
 cogito_tcptimedwaitdelay: 30
+cogito_pagefilesize: 32768
+
