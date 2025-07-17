@@ -1,6 +1,6 @@
 # grant OS privileges and groups needed for Cogito
-# need to add logic to set & feed in the correct / different user accounts
-# consider this - make the variables generic. define the specific user on a host variable (define variable file with fqdn for relevant host)
+# leaving in commented out stubs for rights assignments on non-SQL Server VMs, to use in a later version.
+# need to define the specific engine & agent users on a host variable (define variable file with fqdn for relevant host)
 ---
 - name: Add tags to all tasks
   tags:
@@ -12,51 +12,51 @@
       ansible.windows.win_user_right:
         name: SeServiceLogonRight
         users:
-          - "{{ clarity_user_sqlengine }}"
-          - "{{ clarity_user_sqlagent }}"
-          - "{{ clarity_user_console }}"
-          - "{{ clarity_user_datalink }}"
-          - "{{ slicerdicer_user }}"
+          - "{{ user_sqlengine }}"
+          - "{{ user_sqlagent }}"
+#          - "{{ clarity_user_console }}"
+#          - "{{ clarity_user_datalink }}"
+#          - "{{ slicerdicer_user }}"
         action: add
 
     - name: Lock pages in memory
       ansible.windows.win_user_right:
         name: SeLockMemoryPrivilege
         users:
-          - "{{ clarity_user_sqlengine }}"
-          - "{{ clarity_user_sqlagent }}"
+          - "{{ user_sqlengine }}"
+          - "{{ user_sqlagent }}"
         action: add
 
     - name: Perform volume maintenance tasks
       ansible.windows.win_user_right:
         name: SeManageVolumePrivilege
         users:
-          - "{{ clarity_user_sqlengine }}"
-          - "{{ clarity_user_sqlagent }}"
+          - "{{ user_sqlengine }}"
+          - "{{ user_sqlagent }}"
         action: add
 
     - name: Replace a process level token
       ansible.windows.win_user_right:
         name: SeAssignPrimaryTokenPrivilege
         users:
-          - "{{ clarity_user_sqlengine }}"
-          - "{{ clarity_user_sqlagent }}"
+          - "{{ user_sqlengine }}"
+          - "{{ user_sqlagent }}"
         action: add
 
     - name: Add user to local admin group
       ansible.windows.win_group_membership:
         name: Administrators
         members:
-          - "{{ clarity_user_console }}"
-          - "{{ clarity_user_datalink }}"
+#          - "{{ clarity_user_console }}"
+#          - "{{ clarity_user_datalink }}"
           - "{{ caboodle_user_execution_service }}"
           - "{{ caboodle_install_user }}"
-          - "{{ slicerdicer_user }}"
+#          - "{{ slicerdicer_user }}"
         state: present
 
-    - name: Add user to performance log users group
-      ansible.windows.win_group_membership:
-        name: Performance Log Users
-        members:
-          - "{{ slicerdicer_user }}"
-        state: present
+#    - name: Add user to performance log users group
+#      ansible.windows.win_group_membership:
+#        name: Performance Log Users
+#        members:
+#          - "{{ slicerdicer_user }}"
+#        state: present
