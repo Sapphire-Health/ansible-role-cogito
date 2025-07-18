@@ -1,6 +1,8 @@
 # configure windows firewall for Caboodle per Epic specs
 # note 1 - redundant IF we always disable the firewall service
 # note 2 - does not address NSG
+# note 3 - DAC port rule is redundant microsoft_sql role, "Firewall rule to allow SQL on TCP port 1433 and 1434"
+
 ---
 - name: Add tags to all tasks
   tags:
