@@ -1,4 +1,4 @@
-# does not include NETfeatures
+# does not include .NET, which is included with OS. If needed, it can be added in the microsoft_sql role, which already adds server features.
 ---
 - name: TCP Registry Settings
   ansible.builtin.include_tasks:
@@ -50,3 +50,19 @@
   tags:
     - os
     - caboodle
+- name: Grant permissions on SQL install folder to engine service account
+  ansible.builtin.include_tasks:
+    file: sqlfolderpermissions.yml
+  tags:
+    - SQL
+    - OS
+    - Caboodle
+    - Clarity
+- name: Apply Epic's best practice SQL configurations
+  ansible.builtin.include_tasks:
+    file: sqltuneforepic.yml
+  tags:
+    - SQL
+    - OS
+    - Caboodle
+    - Clarity

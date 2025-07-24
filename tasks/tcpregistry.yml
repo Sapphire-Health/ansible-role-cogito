@@ -1,4 +1,4 @@
-# configure reg settings for TCP per Epic specs - powershell commands immediately below
+# configure reg settings for TCP per Epic specs
 ---
 - name: Add tags to all tasks
   tags:
