@@ -1,0 +1,18 @@
+# Create SourceFiles directory task for Cogito OS role
+# This task ensures that the SourceFiles directory is created for Cogito OS.
+
+---
+- name: Create SourceFiles directory
+
+  tags:
+    - os
+    - caboodle
+  block:
+    - name: Define SourceFiles directory path
+      ansible.windows.win_file:
+        path: C:\SourceFiles
+        state: directory
+    - name: Define permissions for SourceFiles directory
+      ansible.windows.win_owner:
+        path: C:\SourceFiles
+        user: "{{ caboodle_user_execution_service }}"

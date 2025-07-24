@@ -44,3 +44,9 @@
     - os
     - caboodle
     - clarity
+- name: Create SourceFiles directory
+  ansible.builtin.include_tasks:
+    file: sourcefiles_directory.yml
+  tags:
+    - os
+    - caboodle
