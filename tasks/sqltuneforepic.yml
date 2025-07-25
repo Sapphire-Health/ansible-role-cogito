@@ -11,16 +11,16 @@
       ansible.windows.win_regedit:
         path: "HKLM:\\SOFTWARE\\Microsoft\\Microsoft SQL Server\\MSSQL16.MSSQLSERVER\\MSSQLServer\\Parameters"  # How can we detect this? This only works if it runs them all in one go. Otherwise we might overwrite existing.
         name: "{{ 'SQLArg' ~ (item_index + 3) }}"
-        data: "-T{{ item }}" 
+        data: "-T{{ item }}"
         type: "string"
         state: present
       loop: "{{ Traceflags }}"
       loop_control:
         index_var: item_index
-      register: trace_flag_added 
+      register: trace_flag_added
 
     - name: Restart SQL Server if trace flag was added
       ansible.windows.win_service:
-        name: MSSQLSERVER 
+        name: MSSQLSERVER
         state: restarted
       when: trace_flag_added.changed

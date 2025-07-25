@@ -1,0 +1,486 @@
+# can / should we put this into sub-blocks under the When conditions? would that give perf boost?
+# can / should we put all DBs into a single object so we can run the same method for all? Would need to make use of db.datafile_count
+---
+- name: Create mnt directory for sql DB files
+
+  tags:
+    - os
+    - caboodle
+    - clarity
+    - sql
+  block:
+    - name: Define paths for Clarity Report 1
+      when: clarity_report_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.data_path }}1\mnt\'
+        state: directory
+      loop: "{{ clarity_report_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Clarity Report 1
+      when: clarity_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.data_path }}1\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ clarity_report_databases }}"
+      loop_control:
+        loop_var: db
+
+    - name: Define paths for Clarity Report 2
+      when: clarity_report_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.data_path }}2\mnt\'
+        state: directory
+      loop: "{{ clarity_report_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Clarity Report 2
+      when: clarity_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.data_path }}2\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ clarity_report_databases }}"
+      loop_control:
+        loop_var: db
+
+    - name: Define paths for Clarity Report 3
+      when: clarity_report_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.data_path }}3\mnt\'
+        state: directory
+      loop: "{{ clarity_report_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Clarity Report 3
+      when: clarity_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.data_path }}3\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ clarity_report_databases }}"
+      loop_control:
+        loop_var: db
+
+    - name: Define paths for Clarity Report 4
+      when: clarity_report_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.data_path }}4\mnt\'
+        state: directory
+      loop: "{{ clarity_report_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Clarity Report 4
+      when: clarity_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.data_path }}4\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ clarity_report_databases }}"
+      loop_control:
+        loop_var: db
+
+    - name: Define paths for Clarity Report 5
+      when: clarity_report_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.data_path }}5\mnt\'
+        state: directory
+      loop: "{{ clarity_report_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Clarity Report 5
+      when: clarity_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.data_path }}5\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ clarity_report_databases }}"
+      loop_control:
+        loop_var: db
+
+    - name: Define paths for Clarity Report 6
+      when: clarity_report_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.data_path }}6\mnt\'
+        state: directory
+      loop: "{{ clarity_report_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Clarity Report 6
+      when: clarity_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.data_path }}6\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ clarity_report_databases }}"
+      loop_control:
+        loop_var: db
+
+    - name: Define paths for Clarity Report 7
+      when: clarity_report_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.data_path }}7\mnt\'
+        state: directory
+      loop: "{{ clarity_report_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Clarity Report 7
+      when: clarity_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.data_path }}7\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ clarity_report_databases }}"
+      loop_control:
+        loop_var: db
+
+    - name: Define paths for Clarity Report 8
+      when: clarity_report_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.data_path }}8\mnt\'
+        state: directory
+      loop: "{{ clarity_report_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Clarity Report 8
+      when: clarity_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.data_path }}8\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ clarity_report_databases }}"
+      loop_control:
+        loop_var: db
+
+    - name: Define paths for Clarity Report Log
+      when: clarity_report_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.log_path }}\mnt\'
+        state: directory
+      loop: "{{ clarity_report_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Clarity Report Log
+      when: clarity_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.log_path }}\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ clarity_report_databases }}"
+      loop_control:
+        loop_var: db   
+
+    - name: Define paths for Clarity Stage 1
+      when: clarity_stage_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.data_path }}1\mnt\'
+        state: directory
+      loop: "{{ clarity_stage_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Clarity Stage 1
+      when: clarity_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.data_path }}1\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ clarity_stage_databases }}"
+      loop_control:
+        loop_var: db
+
+    - name: Define paths for Clarity Stage 2
+      when: clarity_stage_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.data_path }}2\mnt\'
+        state: directory
+      loop: "{{ clarity_stage_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Clarity Stage 2
+      when: clarity_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.data_path }}2\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ clarity_stage_databases }}"
+      loop_control:
+        loop_var: db
+
+    - name: Define paths for Clarity Stage Log
+      when: clarity_stage_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.log_path }}\mnt\'
+        state: directory
+      loop: "{{ clarity_stage_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Clarity Stage Log
+      when: clarity_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.log_path }}\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ clarity_stage_databases }}"
+      loop_control:
+        loop_var: db
+
+    - name: Define paths for Caboodle Report 1
+      when: caboodle_report_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.data_path }}1\mnt\'
+        state: directory
+      loop: "{{ caboodle_report_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Caboodle Report 1
+      when: caboodle_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.data_path }}1\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ caboodle_report_databases }}"
+      loop_control:
+        loop_var: db
+
+    - name: Define paths for Caboodle Report 2
+      when: caboodle_report_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.data_path }}2\mnt\'
+        state: directory
+      loop: "{{ caboodle_report_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Caboodle Report 2
+      when: caboodle_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.data_path }}2\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ caboodle_report_databases }}"
+      loop_control:
+        loop_var: db
+
+    - name: Define paths for Caboodle Report 3
+      when: caboodle_report_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.data_path }}3\mnt\'
+        state: directory
+      loop: "{{ caboodle_report_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Caboodle Report 3
+      when: caboodle_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.data_path }}3\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ caboodle_report_databases }}"
+      loop_control:
+        loop_var: db
+
+    - name: Define paths for Caboodle Report 4
+      when: caboodle_report_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.data_path }}4\mnt\'
+        state: directory
+      loop: "{{ caboodle_report_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Caboodle Report 4
+      when: caboodle_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.data_path }}4\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ caboodle_report_databases }}"
+      loop_control:
+        loop_var: db
+
+    - name: Define paths for Caboodle Report 5
+      when: caboodle_report_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.data_path }}5\mnt\'
+        state: directory
+      loop: "{{ caboodle_report_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Caboodle Report 5
+      when: caboodle_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.data_path }}5\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ caboodle_report_databases }}"
+      loop_control:
+        loop_var: db
+
+    - name: Define paths for Caboodle Report 6
+      when: caboodle_report_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.data_path }}6\mnt\'
+        state: directory
+      loop: "{{ caboodle_report_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Caboodle Report 6
+      when: caboodle_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.data_path }}6\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ caboodle_report_databases }}"
+      loop_control:
+        loop_var: db
+
+    - name: Define paths for Caboodle Report 7
+      when: caboodle_report_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.data_path }}7\mnt\'
+        state: directory
+      loop: "{{ caboodle_report_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Caboodle Report 7
+      when: caboodle_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.data_path }}7\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ caboodle_report_databases }}"
+      loop_control:
+        loop_var: db
+
+    - name: Define paths for Caboodle Report 8
+      when: caboodle_report_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.data_path }}8\mnt\'
+        state: directory
+      loop: "{{ caboodle_report_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Caboodle Report 8
+      when: caboodle_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.data_path }}8\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ caboodle_report_databases }}"
+      loop_control:
+        loop_var: db
+
+    - name: Define paths for Caboodle Report Log
+      when: caboodle_report_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.log_path }}\mnt\'
+        state: directory
+      loop: "{{ caboodle_report_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Caboodle Report Log
+      when: caboodle_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.log_path }}\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ caboodle_report_databases }}"
+      loop_control:
+        loop_var: db   
+
+    - name: Define paths for Caboodle Stage 1
+      when: caboodle_stage_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.data_path }}1\mnt\'
+        state: directory
+      loop: "{{ caboodle_stage_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Caboodle Stage 1
+      when: caboodle_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.data_path }}1\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ caboodle_stage_databases }}"
+      loop_control:
+        loop_var: db
+
+    - name: Define paths for Caboodle Stage 2
+      when: caboodle_stage_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.data_path }}2\mnt\'
+        state: directory
+      loop: "{{ caboodle_stage_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Caboodle Stage 2
+      when: caboodle_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.data_path }}2\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ caboodle_stage_databases }}"
+      loop_control:
+        loop_var: db
+
+    - name: Define paths for Caboodle Stage 3
+      when: caboodle_stage_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.data_path }}3\mnt\'
+        state: directory
+      loop: "{{ caboodle_stage_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Caboodle Stage 3
+      when: caboodle_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.data_path }}3\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ caboodle_stage_databases }}"
+      loop_control:
+        loop_var: db
+
+    - name: Define paths for Caboodle Stage 4
+      when: caboodle_stage_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.data_path }}4\mnt\'
+        state: directory
+      loop: "{{ caboodle_stage_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Caboodle Stage 4
+      when: caboodle_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.data_path }}4\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ caboodle_stage_databases }}"
+      loop_control:
+        loop_var: db
+
+    - name: Define paths for Caboodle Stage Log
+      when: caboodle_stage_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.log_path }}\mnt\'
+        state: directory
+      loop: "{{ caboodle_stage_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to Caboodle Stage Log
+      when: caboodle_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.log_path }}\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ caboodle_stage_databases }}"
+      loop_control:
+        loop_var: db
+
+    - name: Define paths for SlicerDicer 
+      when: caboodle_stage_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.data_path }}\mnt\'
+        state: directory
+      loop: "{{ slicerdicer_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to SlicerDicer DB
+      when: caboodle_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.data_path }}\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ slicerdicer_databases }}"
+      loop_control:
+        loop_var: db
+
+    - name: Define paths for SlicerDicer Log
+      when: caboodle_stage_databases is defined
+      ansible.windows.win_file:
+        path: '{{ db.log_path }}\mnt\'
+        state: directory
+      loop: "{{ slicerdicer_databases }}"
+      loop_control:
+        loop_var: db
+    - name: Grant access to SlicerDicer Log
+      when: caboodle_stage_databases is defined
+      ansible.windows.win_owner:
+        path: '{{ db.log_path }}\mnt\'
+        user: "{{ user_sqlengine }}"
+      loop: "{{ slicerdicer_databases }}"
+      loop_control:
+        loop_var: db
