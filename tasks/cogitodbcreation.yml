@@ -1,5 +1,9 @@
 # why does it run the script even when test query returns null?
 # how can we restructure clarity_report_databases.db.data_path and log_path so that T-SQL will iterate over varying numbers of filepaths clarity_report_databases.db.data_file_count?
+#
+# These recommended DB settings are correct by default; we don't enforce them with ansible:
+#     collation is SQL_Latin1_General_CP1_CI_AS, Default Cursor is set to GLOBAL, Confirm the Page Verify setting is set to CHECKSUM,
+
 ---
 - name: Add tags to all tasks
   tags:
@@ -341,3 +345,24 @@
           loop: "{{ slicerdicer_stage_databases }}"
           loop_control:
             loop_var: db
+
+
+
+# needs - all the alter DB statements  
+# If you are creating your staging database, set Auto Update Statistics to True and Auto Update Statistics Asynchronously to False. 
+# If you are creating your reporting database, set both Auto Update Statistics and Auto Update Statistics Asynchronously to True.
+
+# set autogrowth & recovery - all DBs
+#ALTER DATABASE [CABOODLE] MODIFY FILEGROUP [primary] AUTOGROW_ALL_FILES
+#ALTER DATABASE [CABOODLE_STAGE] MODIFY FILEGROUP [primary] AUTOGROW_ALL_FILES
+#ALTER DATABASE [CABOODLE] SET MIXED_PAGE_ALLOCATION OFF;
+#ALTER DATABASE [CABOODLE_STAGE] SET MIXED_PAGE_ALLOCATION OFF;
+#
+#ALTER DATABASE [CABOODLE] SET ACCELERATED_DATABASE_RECOVERY = ON
+#(PERSISTENT_VERSION_STORE_FILEGROUP = [PRIMARY]);
+
+# enable query store - all dbs
+#ALTER DATABASE CABOODLE SET QUERY_STORE = ON;
+#ALTER DATABASE CABOODLE SET QUERY_STORE (MAX_STORAGE_SIZE_MB = 4096, QUERY_CAPTURE_MODE = AUTO);
+#ALTER DATABASE CABOODLE_STAGE SET QUERY_STORE = ON;
+#ALTER DATABASE CABOODLE_STAGE SET QUERY_STORE (MAX_STORAGE_SIZE_MB = 4096, QUERY_CAPTURE_MODE = AUTO)

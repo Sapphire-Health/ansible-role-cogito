@@ -66,14 +66,14 @@
     - OS
     - Caboodle
     - Clarity
-- name: Create mnt folders for sql db files
-  ansible.builtin.include_tasks:
-    file: mntdirectories.yml
-  tags:
-    - SQL
-    - OS
-    - Caboodle
-    - Clarity
+#- name: Create mnt folders for sql db files
+#  ansible.builtin.include_tasks:
+#    file: mntdirectories.yml
+#  tags:
+#    - SQL
+#    - OS
+#    - Caboodle
+#    - Clarity
 #- name: Create Epic SQL Databases
 #  ansible.builtin.include_tasks:
 #    file: cogitodbcreation.yml
