@@ -11,343 +11,275 @@
     - sql
     - caboodle
     - clarity
+    - database
   block:
-    - name: Configure Clarity Report SQL Databases
-      when: clarity_report_databases is defined
+    - name: Configure SQL Databases
+      when: sql_dbs is defined
       block:
-        - name: Create Clarity SQL Database Files with T-SQL
+        - name: Create SQL Database Files with T-SQL
           ansible.windows.win_dsc:
             resource_name: SqlScriptQuery
             Id: "ConfigureDatabaseFiles"
             InstanceName: "{{ dsc_instancename }}"
             Variable: "NAME={{ db.name }}, SIZE={{ db.db_size }}, MAXSIZE={{ db.db_max_size }}, FILEGROWTH={{ db.db_growth }}, DATAPATH={{ db.data_path }},LOGSIZE={{ db.log_size }}, LOGMAXSIZE={{ db.log_max_size }}, LOGFILEGROWTH={{ db.log_growth }}, LOGFILEPATH={{ db.log_path }}"
             Encrypt: Optional
-            SetQuery: |
-              USE [master]
-              GO
-              CREATE DATABASE $(NAME)
-              ON
-              PRIMARY
-                  (NAME = $(NAME)1,
-                  FILENAME = '$(DATAPATH)1\mnt\CLRpt1.mdf',
-                  SIZE = $(SIZE),
-                  MAXSIZE = $(MAXSIZE),
-                  FILEGROWTH = $(FILEGROWTH)),
-                  ( NAME = $(NAME)2,
-                  FILENAME = '$(DATAPATH)2\mnt\CLRpt2.ndf',
-                  SIZE = $(SIZE),
-                  MAXSIZE = $(MAXSIZE),
-                  FILEGROWTH = $(FILEGROWTH)),
-                  ( NAME = $(NAME)3,
-                  FILENAME = '$(DATAPATH)3\mnt\CLRpt3.ndf',
-                  SIZE = $(SIZE),
-                  MAXSIZE = $(MAXSIZE),
-                  FILEGROWTH = $(FILEGROWTH)),
-                  ( NAME = $(NAME)4,
-                  FILENAME = '$(DATAPATH)4\mnt\CLRpt4.ndf',
-                  SIZE = $(SIZE),
-                  MAXSIZE = $(MAXSIZE),
-                  FILEGROWTH = $(FILEGROWTH)),
-                  ( NAME = $(NAME)5,
-                  FILENAME = '$(DATAPATH)5\mnt\CLRpt5.ndf',
-                  SIZE = $(SIZE),
-                  MAXSIZE = $(MAXSIZE),
-                  FILEGROWTH = $(FILEGROWTH)),
-                  ( NAME = $(NAME)6,
-                  FILENAME = '$(DATAPATH)6\mnt\CLRpt6.ndf',
-                  SIZE = $(SIZE),
-                  MAXSIZE = $(MAXSIZE),
-                  FILEGROWTH = $(FILEGROWTH)),
-                  ( NAME = $(NAME)7,
-                  FILENAME = '$(DATAPATH)7\mnt\CLRpt7.ndf',
-                  SIZE = $(SIZE),
-                  MAXSIZE = $(MAXSIZE),
-                  FILEGROWTH = $(FILEGROWTH)),
-                  ( NAME = $(NAME)8,
-                  FILENAME = '$(DATAPATH)8\mnt\CLRpt8.ndf',
-                  SIZE = $(SIZE),
-                  MAXSIZE = $(MAXSIZE),
-                  FILEGROWTH = $(FILEGROWTH))
-              LOG ON
-                 (NAME = $(NAME)Log,
-                  FILENAME = '$(LOGFILEPATH)\mnt\CLRpt.ldf',
-                  SIZE = $(LOGSIZE),
-                  MAXSIZE = $(LOGMAXSIZE),
-                  FILEGROWTH = $(LOGFILEGROWTH));
-              GO
+            SetQuery: "{{ lookup('ansible.builtin.template', 'dbcreationscript.j2') }}"
             GetQuery: |
-              USE [master]
-              GO
-              SELECT * FROM sys.master_files
-              WHERE type_desc = 'ROWS'
-              AND name = '$(NAME)'
-              GO
+              SELECT NULL;
             TestQuery: |
-              DECLARE @dbname nvarchar(128)
-              SET @dbname = N'$(NAME)'
-              SELECT
-              CASE
-                  WHEN EXISTS (
-                      SELECT name
-                      FROM sys.databases
-                      WHERE name = @dbname
-                  ) THEN NULL
-                  ELSE 'DB $(NAME) not found; running DB creation'
-              END AS Result;
-          loop: "{{ clarity_report_databases }}"
+              USE [msdb]
+              GO
+              IF EXISTS (
+                SELECT 1
+                FROM sys.databases
+                WHERE name = '$(NAME)'
+              )
+                PRINT 'Found $(NAME) database'
+              ELSE
+                RAISERROR ('Did not find $(NAME) role', 16, 1)
+              GO
+          loop: "{{ sql_dbs }}"
           loop_control:
             loop_var: db
 
-    - name: Configure Clarity Stage SQL Databases
-      when: clarity_stage_databases is defined
-      block:
-        - name: Create Cogito SQL Database Files with T-SQL
-          ansible.windows.win_dsc:
-            resource_name: SqlScriptQuery
-            Id: "ConfigureDatabaseFiles"
-            InstanceName: "{{ dsc_instancename }}"
-            Variable: "NAME={{ db.name }}, SIZE={{ db.db_size }}, MAXSIZE={{ db.db_max_size }}, FILEGROWTH={{ db.db_growth }}, DATAPATH={{db.data_path}},LOGSIZE={{ db.log_size }}, LOGMAXSIZE={{ db.log_max_size }}, LOGFILEGROWTH={{ db.log_growth }}, LOGFILEPATH={{ db.log_path }}"
-            Encrypt: Optional
-            SetQuery: |
-              USE [master]
-              GO
-              CREATE DATABASE $(NAME)
-              ON
-              PRIMARY
-                  (NAME = $(NAME)1,
-                  FILENAME = '$(DATAPATH)1\mnt\CLStg1.mdf',
-                  SIZE = $(SIZE),
-                  MAXSIZE = $(MAXSIZE),
-                  FILEGROWTH = $(FILEGROWTH)),
-                  ( NAME = $(NAME)2,
-                  FILENAME = '$(DATAPATH)2\mnt\CLStg2.ndf',
-                  SIZE = $(SIZE),
-                  MAXSIZE = $(MAXSIZE),
-                  FILEGROWTH = $(FILEGROWTH))
-              LOG ON
-                 (NAME = $(NAME)Log,
-                  FILENAME = '$(LOGFILEPATH)\mnt\CLStg.ldf',
-                  SIZE = $(LOGSIZE),
-                  MAXSIZE = $(LOGMAXSIZE),
-                  FILEGROWTH = $(LOGFILEGROWTH));
-              GO
-            GetQuery: |
-              USE [master]
-              GO
-              SELECT * FROM sys.master_files
-              WHERE type_desc = 'ROWS'
-              AND name = '$(NAME)'
-              GO
-            TestQuery: |
-              SELECT
-              CASE
-                  WHEN EXISTS (
-                      SELECT name
-                      FROM sys.databases
-                      WHERE name = '$(NAME)'
-                  ) THEN NULL
-                  ELSE 'DB $(NAME) not found; running DB creation'
-              END AS Result;
-          loop: "{{ clarity_stage_databases }}"
-          loop_control:
-            loop_var: db
+    # - name: Configure Clarity Stage SQL Databases
+    #   when: clarity_stage_databases is defined
+    #   block:
+    #     - name: Create Cogito SQL Database Files with T-SQL
+    #       ansible.windows.win_dsc:
+    #         resource_name: SqlScriptQuery
+    #         Id: "ConfigureDatabaseFiles"
+    #         InstanceName: "{{ dsc_instancename }}"
+    #         Variable: "NAME={{ db.name }}, SIZE={{ db.db_size }}, MAXSIZE={{ db.db_max_size }}, FILEGROWTH={{ db.db_growth }}, DATAPATH={{db.data_path}},LOGSIZE={{ db.log_size }}, LOGMAXSIZE={{ db.log_max_size }}, LOGFILEGROWTH={{ db.log_growth }}, LOGFILEPATH={{ db.log_path }}"
+    #         Encrypt: Optional
+    #         SetQuery: |
+    #           USE [master]
+    #           GO
+    #           CREATE DATABASE $(NAME)
+    #           ON
+    #           PRIMARY
+    #               (NAME = $(NAME)1,
+    #               FILENAME = '$(DATAPATH)1\mnt\CLStg1.mdf',
+    #               SIZE = $(SIZE),
+    #               MAXSIZE = $(MAXSIZE),
+    #               FILEGROWTH = $(FILEGROWTH)),
+    #               ( NAME = $(NAME)2,
+    #               FILENAME = '$(DATAPATH)2\mnt\CLStg2.ndf',
+    #               SIZE = $(SIZE),
+    #               MAXSIZE = $(MAXSIZE),
+    #               FILEGROWTH = $(FILEGROWTH))
+    #           LOG ON
+    #              (NAME = $(NAME)Log,
+    #               FILENAME = '$(LOGFILEPATH)\mnt\CLStg.ldf',
+    #               SIZE = $(LOGSIZE),
+    #               MAXSIZE = $(LOGMAXSIZE),
+    #               FILEGROWTH = $(LOGFILEGROWTH));
+    #           GO
+    #         GetQuery: |
+    #           SELECT NULL;
+    #         TestQuery: |
+    #           USE [msdb]
+    #           GO
+    #           IF EXISTS (
+    #             SELECT 1
+    #             FROM sys.databases
+    #             WHERE name = '$(NAME)'
+    #           )
+    #             PRINT 'Found $(NAME) database'
+    #           ELSE
+    #             RAISERROR ('Did not find $(NAME) role', 16, 1)
+    #           GO
+    #       loop: "{{ clarity_stage_databases }}"
+    #       loop_control:
+    #         loop_var: db
 
-    - name: Configure Caboodle Report SQL Databases
-      when: caboodle_report_databases is defined
-      block:
-      - name: Create Caboodle SQL Database Files with T-SQL
-        ansible.windows.win_dsc:
-          resource_name: SqlScriptQuery
-          Id: "ConfigureDatabaseFiles"
-          InstanceName: "{{ dsc_instancename }}"
-          Variable: "NAME={{ db.name }}, SIZE={{ db.db_size }}, MAXSIZE={{ db.db_max_size }}, FILEGROWTH={{ db.db_growth }}, DATAPATH={{ db.data_path }},LOGSIZE={{ db.log_size }}, LOGMAXSIZE={{ db.log_max_size }}, LOGFILEGROWTH={{ db.log_growth }}, LOGFILEPATH={{ db.log_path }}"
-          Encrypt: Optional
-          SetQuery: |
-            USE [master]
-            GO
-            CREATE DATABASE $(NAME)
-            ON
-            PRIMARY
-                (NAME = $(NAME)1,
-                FILENAME = '$(DATAPATH)1\mnt\CDWRpt1.mdf',
-                SIZE = $(SIZE),
-                MAXSIZE = $(MAXSIZE),
-                FILEGROWTH = $(FILEGROWTH)),
-                ( NAME = $(NAME)2,
-                FILENAME = '$(DATAPATH)2\mnt\CDWRpt2.ndf',
-                SIZE = $(SIZE),
-                MAXSIZE = $(MAXSIZE),
-                FILEGROWTH = $(FILEGROWTH)),
-                ( NAME = $(NAME)3,
-                FILENAME = '$(DATAPATH)3\mnt\CDWRpt3.ndf',
-                SIZE = $(SIZE),
-                MAXSIZE = $(MAXSIZE),
-                FILEGROWTH = $(FILEGROWTH)),
-                ( NAME = $(NAME)4,
-                FILENAME = '$(DATAPATH)4\mnt\CDWRpt4.ndf',
-                SIZE = $(SIZE),
-                MAXSIZE = $(MAXSIZE),
-                FILEGROWTH = $(FILEGROWTH)),
-                ( NAME = $(NAME)5,
-                FILENAME = '$(DATAPATH)5\mnt\CDWRpt5.ndf',
-                SIZE = $(SIZE),
-                MAXSIZE = $(MAXSIZE),
-                FILEGROWTH = $(FILEGROWTH)),
-                ( NAME = $(NAME)6,
-                FILENAME = '$(DATAPATH)6\mnt\CDWRpt6.ndf',
-                SIZE = $(SIZE),
-                MAXSIZE = $(MAXSIZE),
-                FILEGROWTH = $(FILEGROWTH)),
-                ( NAME = $(NAME)7,
-                FILENAME = '$(DATAPATH)7\mnt\CDWRpt7.ndf',
-                SIZE = $(SIZE),
-                MAXSIZE = $(MAXSIZE),
-                FILEGROWTH = $(FILEGROWTH)),
-                ( NAME = $(NAME)8,
-                FILENAME = '$(DATAPATH)8\mnt\CDWRpt8.ndf',
-                SIZE = $(SIZE),
-                MAXSIZE = $(MAXSIZE),
-                FILEGROWTH = $(FILEGROWTH))
-            LOG ON
-               (NAME = $(NAME)Log,
-                FILENAME = '$(LOGFILEPATH)\mnt\CDWRpt.ldf',
-                SIZE = $(LOGSIZE),
-                MAXSIZE = $(LOGMAXSIZE),
-                FILEGROWTH = $(LOGFILEGROWTH));
-            GO
-          GetQuery: |
-            USE [master]
-            GO
-            SELECT * FROM sys.master_files
-            WHERE type_desc = 'ROWS'
-            AND name = '$(NAME)'
-            GO
-          TestQuery: |
-            SELECT
-            CASE
-                WHEN EXISTS (
-                    SELECT name 
-                    FROM sys.databases 
-                    WHERE name = '$(NAME)'
-                ) THEN NULL
-                ELSE 'DB $(NAME) not found; running DB creation'
-            END AS Result;
-        loop: "{{ caboodle_report_databases }}"
-        loop_control:
-          loop_var: db
+    # - name: Configure Caboodle Report SQL Databases
+    #   when: caboodle_report_databases is defined
+    #   block:
+    #   - name: Create Caboodle SQL Database Files with T-SQL
+    #     ansible.windows.win_dsc:
+    #       resource_name: SqlScriptQuery
+    #       Id: "ConfigureDatabaseFiles"
+    #       InstanceName: "{{ dsc_instancename }}"
+    #       Variable: "NAME={{ db.name }}, SIZE={{ db.db_size }}, MAXSIZE={{ db.db_max_size }}, FILEGROWTH={{ db.db_growth }}, DATAPATH={{ db.data_path }},LOGSIZE={{ db.log_size }}, LOGMAXSIZE={{ db.log_max_size }}, LOGFILEGROWTH={{ db.log_growth }}, LOGFILEPATH={{ db.log_path }}"
+    #       Encrypt: Optional
+    #       SetQuery: |
+    #         USE [master]
+    #         GO
+    #         CREATE DATABASE $(NAME)
+    #         ON
+    #         PRIMARY
+    #             (NAME = $(NAME)1,
+    #             FILENAME = '$(DATAPATH)1\mnt\CDWRpt1.mdf',
+    #             SIZE = $(SIZE),
+    #             MAXSIZE = $(MAXSIZE),
+    #             FILEGROWTH = $(FILEGROWTH)),
+    #             ( NAME = $(NAME)2,
+    #             FILENAME = '$(DATAPATH)2\mnt\CDWRpt2.ndf',
+    #             SIZE = $(SIZE),
+    #             MAXSIZE = $(MAXSIZE),
+    #             FILEGROWTH = $(FILEGROWTH)),
+    #             ( NAME = $(NAME)3,
+    #             FILENAME = '$(DATAPATH)3\mnt\CDWRpt3.ndf',
+    #             SIZE = $(SIZE),
+    #             MAXSIZE = $(MAXSIZE),
+    #             FILEGROWTH = $(FILEGROWTH)),
+    #             ( NAME = $(NAME)4,
+    #             FILENAME = '$(DATAPATH)4\mnt\CDWRpt4.ndf',
+    #             SIZE = $(SIZE),
+    #             MAXSIZE = $(MAXSIZE),
+    #             FILEGROWTH = $(FILEGROWTH)),
+    #             ( NAME = $(NAME)5,
+    #             FILENAME = '$(DATAPATH)5\mnt\CDWRpt5.ndf',
+    #             SIZE = $(SIZE),
+    #             MAXSIZE = $(MAXSIZE),
+    #             FILEGROWTH = $(FILEGROWTH)),
+    #             ( NAME = $(NAME)6,
+    #             FILENAME = '$(DATAPATH)6\mnt\CDWRpt6.ndf',
+    #             SIZE = $(SIZE),
+    #             MAXSIZE = $(MAXSIZE),
+    #             FILEGROWTH = $(FILEGROWTH)),
+    #             ( NAME = $(NAME)7,
+    #             FILENAME = '$(DATAPATH)7\mnt\CDWRpt7.ndf',
+    #             SIZE = $(SIZE),
+    #             MAXSIZE = $(MAXSIZE),
+    #             FILEGROWTH = $(FILEGROWTH)),
+    #             ( NAME = $(NAME)8,
+    #             FILENAME = '$(DATAPATH)8\mnt\CDWRpt8.ndf',
+    #             SIZE = $(SIZE),
+    #             MAXSIZE = $(MAXSIZE),
+    #             FILEGROWTH = $(FILEGROWTH))
+    #         LOG ON
+    #            (NAME = $(NAME)Log,
+    #             FILENAME = '$(LOGFILEPATH)\mnt\CDWRpt.ldf',
+    #             SIZE = $(LOGSIZE),
+    #             MAXSIZE = $(LOGMAXSIZE),
+    #             FILEGROWTH = $(LOGFILEGROWTH));
+    #         GO
+    #       GetQuery: |
+    #         SELECT NULL;
+    #       TestQuery: |
+    #         USE [msdb]
+    #         GO
+    #         IF EXISTS (
+    #           SELECT 1
+    #           FROM sys.databases
+    #           WHERE name = '$(NAME)'
+    #         )
+    #           PRINT 'Found $(NAME) database'
+    #         ELSE
+    #           RAISERROR ('Did not find $(NAME) role', 16, 1)
+    #         GO
+    #     loop: "{{ caboodle_report_databases }}"
+    #     loop_control:
+    #       loop_var: db
 
-    - name: Configure Caboodle Stage SQL Databases
-      when: caboodle_stage_databases is defined
-      block:
-        - name: Create Cogito SQL Database Files with T-SQL
-          ansible.windows.win_dsc:
-            resource_name: SqlScriptQuery
-            Id: "ConfigureDatabaseFiles"
-            InstanceName: "{{ dsc_instancename }}"
-            Variable: "NAME={{ db.name }}, SIZE={{ db.db_size }}, MAXSIZE={{ db.db_max_size }}, FILEGROWTH={{ db.db_growth }}, DATAPATH={{db.data_path}},LOGSIZE={{ db.log_size }}, LOGMAXSIZE={{ db.log_max_size }}, LOGFILEGROWTH={{ db.log_growth }}, LOGFILEPATH={{db.log_path}}"
-            Encrypt: Optional
-            SetQuery: |
-              USE [master]
-              GO
-              CREATE DATABASE $(NAME)
-              ON
-              PRIMARY
-                  (NAME = $(NAME)1,
-                  FILENAME = '$(DATAPATH)1\mnt\CDWStg1.mdf',
-                  SIZE = $(SIZE),
-                  MAXSIZE = $(MAXSIZE),
-                  FILEGROWTH = $(FILEGROWTH)),
-                  ( NAME = $(NAME)2,
-                  FILENAME = '$(DATAPATH)2\mnt\CDWStg2.ndf',
-                  SIZE = $(SIZE),
-                  MAXSIZE = $(MAXSIZE),
-                  FILEGROWTH = $(FILEGROWTH)),
-                  (NAME = $(NAME)3,
-                  FILENAME = '$(DATAPATH)3\mnt\CDWStg3.mdf',
-                  SIZE = $(SIZE),
-                  MAXSIZE = $(MAXSIZE),
-                  FILEGROWTH = $(FILEGROWTH)),
-                  ( NAME = $(NAME)4,
-                  FILENAME = '$(DATAPATH)2\mnt\CDWStg4.ndf',
-                  SIZE = $(SIZE),
-                  MAXSIZE = $(MAXSIZE),
-                  FILEGROWTH = $(FILEGROWTH))
-              LOG ON
-                 (NAME = $(NAME)Log,
-                  FILENAME = '$(LOGFILEPATH)\mnt\CDWStg.ldf',
-                  SIZE = $(LOGSIZE),
-                  MAXSIZE = $(LOGMAXSIZE),
-                  FILEGROWTH = $(LOGFILEGROWTH));
-              GO
-            GetQuery: |
-              USE [master]
-              GO
-              SELECT * FROM sys.master_files
-              WHERE type_desc = 'ROWS'
-              AND name = '$(NAME)'
-              GO
-            TestQuery: |
-              SELECT
-              CASE
-                  WHEN EXISTS (
-                      SELECT name
-                      FROM sys.databases
-                      WHERE name = '$(NAME)'
-                  ) THEN NULL
-                  ELSE 'DB $(NAME) not found; running DB creation'
-              END AS Result;
-          loop: "{{ caboodle_stage_databases }}"
-          loop_control:
-            loop_var: db
+    # - name: Configure Caboodle Stage SQL Databases
+    #   when: caboodle_stage_databases is defined
+    #   block:
+    #     - name: Create Cogito SQL Database Files with T-SQL
+    #       ansible.windows.win_dsc:
+    #         resource_name: SqlScriptQuery
+    #         Id: "ConfigureDatabaseFiles"
+    #         InstanceName: "{{ dsc_instancename }}"
+    #         Variable: "NAME={{ db.name }}, SIZE={{ db.db_size }}, MAXSIZE={{ db.db_max_size }}, FILEGROWTH={{ db.db_growth }}, DATAPATH={{db.data_path}},LOGSIZE={{ db.log_size }}, LOGMAXSIZE={{ db.log_max_size }}, LOGFILEGROWTH={{ db.log_growth }}, LOGFILEPATH={{db.log_path}}"
+    #         Encrypt: Optional
+    #         SetQuery: |
+    #           USE [master]
+    #           GO
+    #           CREATE DATABASE $(NAME)
+    #           ON
+    #           PRIMARY
+    #               (NAME = $(NAME)1,
+    #               FILENAME = '$(DATAPATH)1\mnt\CDWStg1.mdf',
+    #               SIZE = $(SIZE),
+    #               MAXSIZE = $(MAXSIZE),
+    #               FILEGROWTH = $(FILEGROWTH)),
+    #               ( NAME = $(NAME)2,
+    #               FILENAME = '$(DATAPATH)2\mnt\CDWStg2.ndf',
+    #               SIZE = $(SIZE),
+    #               MAXSIZE = $(MAXSIZE),
+    #               FILEGROWTH = $(FILEGROWTH)),
+    #               (NAME = $(NAME)3,
+    #               FILENAME = '$(DATAPATH)3\mnt\CDWStg3.mdf',
+    #               SIZE = $(SIZE),
+    #               MAXSIZE = $(MAXSIZE),
+    #               FILEGROWTH = $(FILEGROWTH)),
+    #               ( NAME = $(NAME)4,
+    #               FILENAME = '$(DATAPATH)2\mnt\CDWStg4.ndf',
+    #               SIZE = $(SIZE),
+    #               MAXSIZE = $(MAXSIZE),
+    #               FILEGROWTH = $(FILEGROWTH))
+    #           LOG ON
+    #              (NAME = $(NAME)Log,
+    #               FILENAME = '$(LOGFILEPATH)\mnt\CDWStg.ldf',
+    #               SIZE = $(LOGSIZE),
+    #               MAXSIZE = $(LOGMAXSIZE),
+    #               FILEGROWTH = $(LOGFILEGROWTH));
+    #           GO
+    #         GetQuery: |
+    #           SELECT NULL;
+    #         TestQuery: |
+    #           USE [msdb]
+    #           GO
+    #           IF EXISTS (
+    #             SELECT 1
+    #             FROM sys.databases
+    #             WHERE name = '$(NAME)'
+    #           )
+    #             PRINT 'Found $(NAME) database'
+    #           ELSE
+    #             RAISERROR ('Did not find $(NAME) role', 16, 1)
+    #           GO
+    #       loop: "{{ caboodle_stage_databases }}"
+    #       loop_control:
+    #         loop_var: db
 
-    - name: Configure SlicerDicer SQL Databases
-      when: caboodle_stage_databases is defined
-      block:
-        - name: Create SlicerDicer SQL Database Files with T-SQL
-          ansible.windows.win_dsc:
-            resource_name: SqlScriptQuery
-            Id: "ConfigureDatabaseFiles"
-            InstanceName: "{{ dsc_instancename }}"
-            Variable: "NAME={{ db.name }}, SIZE={{ db.db_size }}, MAXSIZE={{ db.db_max_size }}, FILEGROWTH={{ db.db_growth }}, DATAPATH={{db.data_path}},LOGSIZE={{ db.log_size }}, LOGMAXSIZE={{ db.log_max_size }}, LOGFILEGROWTH={{ db.log_growth }}, LOGFILEPATH={{db.log_path}}"
-            Encrypt: Optional
-            SetQuery: |
-              USE [master]
-              GO
-              CREATE DATABASE $(NAME)
-              ON
-              PRIMARY
-                  (NAME = $(NAME)1,
-                  FILENAME = '$(DATAPATH)\mnt\SlicerDicer.mdf',
-                  SIZE = $(SIZE),
-                  MAXSIZE = $(MAXSIZE),
-                  FILEGROWTH = $(FILEGROWTH))
-              LOG ON
-                 (NAME = $(NAME)_Log,
-                  FILENAME = '$(LOGFILEPATH)\mnt\SlicerDicer.ldf',
-                  SIZE = $(LOGSIZE),
-                  MAXSIZE = $(LOGMAXSIZE),
-                  FILEGROWTH = $(LOGFILEGROWTH));
-              GO
-            GetQuery: |
-              USE [master]
-              GO
-              SELECT * FROM sys.master_files
-              WHERE type_desc = 'ROWS'
-              AND name = '$(NAME)'
-              GO
-            TestQuery: |
-              SELECT
-              CASE
-                  WHEN EXISTS (
-                      SELECT name
-                      FROM sys.databases
-                      WHERE name = '$(NAME)'
-                  ) THEN NULL
-                  ELSE 'DB $(NAME) not found; running DB creation'
-              END AS Result;
-          loop: "{{ slicerdicer_stage_databases }}"
-          loop_control:
-            loop_var: db
+    # - name: Configure SlicerDicer SQL Databases
+    #   when: caboodle_stage_databases is defined
+    #   block:
+    #     - name: Create SlicerDicer SQL Database Files with T-SQL
+    #       ansible.windows.win_dsc:
+    #         resource_name: SqlScriptQuery
+    #         Id: "ConfigureDatabaseFiles"
+    #         InstanceName: "{{ dsc_instancename }}"
+    #         Variable: "NAME={{ db.name }}, SIZE={{ db.db_size }}, MAXSIZE={{ db.db_max_size }}, FILEGROWTH={{ db.db_growth }}, DATAPATH={{db.data_path}},LOGSIZE={{ db.log_size }}, LOGMAXSIZE={{ db.log_max_size }}, LOGFILEGROWTH={{ db.log_growth }}, LOGFILEPATH={{db.log_path}}"
+    #         Encrypt: Optional
+    #         SetQuery: |
+    #           USE [master]
+    #           GO
+    #           CREATE DATABASE $(NAME)
+    #           ON
+    #           PRIMARY
+    #               (NAME = $(NAME)1,
+    #               FILENAME = '$(DATAPATH)\mnt\SlicerDicer.mdf',
+    #               SIZE = $(SIZE),
+    #               MAXSIZE = $(MAXSIZE),
+    #               FILEGROWTH = $(FILEGROWTH))
+    #           LOG ON
+    #              (NAME = $(NAME)_Log,
+    #               FILENAME = '$(LOGFILEPATH)\mnt\SlicerDicer.ldf',
+    #               SIZE = $(LOGSIZE),
+    #               MAXSIZE = $(LOGMAXSIZE),
+    #               FILEGROWTH = $(LOGFILEGROWTH));
+    #           GO
+    #         GetQuery: |
+    #           SELECT NULL;
+    #         TestQuery: |
+    #           USE [msdb]
+    #           GO
+    #           IF EXISTS (
+    #             SELECT 1
+    #             FROM sys.databases
+    #             WHERE name = '$(NAME)'
+    #           )
+    #             PRINT 'Found $(NAME) database'
+    #           ELSE
+    #             RAISERROR ('Did not find $(NAME) role', 16, 1)
+    #           GO
+    #       loop: "{{ slicerdicer_stage_databases }}"
+    #       loop_control:
+    #         loop_var: db
 
     - name: Configure Epic best practices for SQL Databases
       when: clarity_report_databases is defined
@@ -384,7 +316,7 @@
             ALTER DATABASE [$(NAME)] SET NUMERIC_ROUNDABORT OFF;
             ALTER DATABASE [$(NAME)] SET QUOTED_IDENTIFIER OFF;
             ALTER DATABASE [$(NAME)] SET RECURSIVE_TRIGGERS OFF;
-            ALTER DATABASE [$(NAME)] SET  DISABLE_BROKER;
+            ALTER DATABASE [$(NAME)] SET DISABLE_BROKER;
             ALTER DATABASE [$(NAME)] SET AUTO_UPDATE_STATISTICS_ASYNC OFF;
             ALTER DATABASE [$(NAME)] SET DATE_CORRELATION_OPTIMIZATION OFF;
             ALTER DATABASE [$(NAME)] SET PARAMETERIZATION SIMPLE;
@@ -396,22 +328,19 @@
             ALTER DATABASE [$(NAME)] SET TARGET_RECOVERY_TIME = 60 SECONDS;
             ALTER DATABASE [$(NAME)] SET DELAYED_DURABILITY = DISABLED;
           GetQuery: |
-            USE [master]
-            GO
-            SELECT * FROM sys.master_files
-            WHERE type_desc = 'ROWS'
-            AND name = '$(NAME)'
-            GO
+            SELECT NULL;
           TestQuery: |
-            SELECT
-            CASE
-                WHEN EXISTS (
-                    SELECT name
-                    FROM sys.databases
-                    WHERE name = '$(NAME)'
-                ) THEN 'DB $(NAME) found; running DB Tuning'
-                ELSE NULL
-            END AS Result;
+            USE [msdb]
+            GO
+            IF EXISTS (
+              SELECT 1
+              FROM sys.databases
+              WHERE name = '$(NAME)'
+            )
+              PRINT 'Did not find $(NAME) role'
+            ELSE
+              RAISERROR ('Found $(NAME) database', 16, 1)
+            GO
         loop: "{{ clarity_report_databases }}"
         loop_control:
           loop_var: db

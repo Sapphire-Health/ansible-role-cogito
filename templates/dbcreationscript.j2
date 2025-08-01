@@ -4,15 +4,15 @@ GO
 CREATE DATABASE $(NAME)
 ON
 PRIMARY
-    {% for i in range(1, 5) %}(NAME = $(NAME){{i}},
-    FILENAME = '$(DATAPATH){{i}}\mnt\{{dbname}}{{i}}.{% if i == 1 %}mdf{% else %}ndf{% endif %}',
+    {% for i in range(1, db.data_file_count | int + 1) %}(NAME = $(NAME){{i}},
+    FILENAME = '$(DATAPATH){{i}}\mnt\{{ db.filename }}{{i}}.{% if i == 1 %}mdf{% else %}ndf{% endif %}',
     SIZE = $(SIZE),
     MAXSIZE = $(MAXSIZE),
     FILEGROWTH = $(FILEGROWTH)){% if not loop.last %},{% endif %}
     {% endfor %}
 LOG ON
     (NAME = $(NAME)Log,
-    FILENAME = '$(LOGFILEPATH)\mnt\{{dbname}}.ldf',
+    FILENAME = '$(LOGFILEPATH)\mnt\{{ db.filename }}.ldf',
     SIZE = $(LOGSIZE),
     MAXSIZE = $(LOGMAXSIZE),
     FILEGROWTH = $(LOGFILEGROWTH));
