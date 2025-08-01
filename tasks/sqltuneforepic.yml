@@ -1,6 +1,7 @@
 # configure SQL Server per Epic specs
 # How can we detect the numbering to use for regedit name? This only works if it runs them all in one go. Otherwise we might overwrite existing.
-
+# it seems like whoever "had it last" sets sql_config_updated. there must be a better way to handle this?
+# does lyas know how to handle pscredential objects? I don't. Line 37
 ---
 - name: Add tags to all tasks
   tags:
@@ -32,5 +33,118 @@
         resource_name: SqlMaxDop
         Ensure: present
         MaxDop: "{{ [hostvars[inventory_hostname].cpu_options.core_count | int * hostvars[inventory_hostname].cpu_options.threads_per_core | int, 8] | min }}"
+#
+#    replaced by task below it
+#    for agent account ServiceType: SQLServerAgent
+#    - name: Set engine account to service user
+#      ansible.windows.win_dsc:
+#        InstanceName: MSSQLSERVER
+#        resource_name: SqlServiceAccount
+#        ServiceType: DatabaseEngine
+#        ServiceAccount: PSCredential <<<------- how do we pass this in?
 
-# needs to set agent and engine accounts
+    - name: Set engine account to service user
+      ansible.windows.win_service:
+        name: MSSQLSERVER
+        username: "{{ dsc_sqlsvcaccount }}"
+        password: "{{ lookup('ansible.builtin.env', 'LOCAL_ADMIN_PASSWORD') }}"
+
+    - name: Set agent account to service user
+      ansible.windows.win_service:
+        name: SQL Server Agent (MSSQLSERVER)
+        username: "{{ dsc_sqlsvcaccount }}"
+        password: "{{ lookup('ansible.builtin.env', 'LOCAL_ADMIN_PASSWORD') }}"
+
+    - name: Set index fill factor and max worker threads with T-SQL
+      ansible.windows.win_dsc:
+        resource_name: SqlScriptQuery
+        Id: "ConfigureIndexFillandMaxWorkerThreads"
+        InstanceName: "{{ dsc_instancename }}"
+        Encrypt: Optional
+        SetQuery: |
+          EXEC sys.sp_configure 'show advanced options', 1;
+          RECONFIGURE;
+          EXEC sys.sp_configure 'fill factor (%)', 85;
+          RECONFIGURE;
+          EXEC sp_configure 'max worker threads', 0;
+          RECONFIGURE;
+        GetQuery: |
+          SELECT 
+              name,
+              value_in_use AS [Current Value],
+              value AS [Configured Value]
+          FROM sys.configurations
+          WHERE name IN ('fill factor (%)', 'max worker threads');
+        TestQuery: |
+          SELECT
+      register: sql_config_updated
+
+    - name: Set max memory for Clarity with T-SQL
+      when: clarity_report_databases is defined
+      ansible.windows.win_dsc:
+        resource_name: SqlScriptQuery
+        Id: "ConfigureIndexFillandMaxWorkerThreads"
+        InstanceName: "{{ dsc_instancename }}"
+        Encrypt: Optional
+        SetQuery: |
+          DECLARE @memory INT;
+          EXEC sp_configure 'show advanced options', 1;
+          RECONFIGURE;
+          SELECT @memory = (0.83)*physical_memory_kb/1024 from sys.dm_os_sys_info
+          EXEC sys.sp_configure N'max server memory (MB)', @memory
+          RECONFIGURE WITH OVERRIDE
+        GetQuery: |
+          SELECT name, value, value_in_use
+          FROM sys.configurations
+          WHERE name = 'max server memory (MB)';
+        TestQuery: |
+          SELECT 
+              CASE 
+                  WHEN cfg.value_in_use = CAST(0.83 * os.physical_memory_kb / 1024 AS INT) 
+                  THEN NULL 
+                  ELSE cfg.value_in_use 
+              END AS max_server_memory_override
+          FROM sys.configurations AS cfg
+          CROSS JOIN sys.dm_os_sys_info AS os
+          WHERE cfg.name = 'max server memory (MB)';
+      register: sql_config_updated
+
+    - name: Set max memory for Caboodle with T-SQL
+      when: caboodle_report_databases is defined
+      ansible.windows.win_dsc:
+        resource_name: SqlScriptQuery
+        Id: "ConfigureIndexFillandMaxWorkerThreads"
+        InstanceName: "{{ dsc_instancename }}"
+        Encrypt: Optional
+        SetQuery: |
+          DECLARE @memory INT;
+          EXEC sp_configure 'show advanced options', 1;
+          RECONFIGURE;
+          SELECT @memory = (0.87)*physical_memory_kb/1024 from sys.dm_os_sys_info
+          EXEC sys.sp_configure N'max server memory (MB)', @memory
+          RECONFIGURE WITH OVERRIDE
+        GetQuery: |
+          SELECT name, value, value_in_use
+          FROM sys.configurations
+          WHERE name = 'max server memory (MB)';
+        TestQuery: |
+          SELECT 
+              CASE 
+                  WHEN cfg.value_in_use = CAST(0.87 * os.physical_memory_kb / 1024 AS INT) 
+                  THEN NULL 
+                  ELSE cfg.value_in_use 
+              END AS max_server_memory_override
+          FROM sys.configurations AS cfg
+          CROSS JOIN sys.dm_os_sys_info AS os
+          WHERE cfg.name = 'max server memory (MB)';
+      register: sql_config_updated
+
+    - name: Restart SQL Server if fill factor, max worker threads, or max memory was changed
+      when: sql_config_updated.changed
+      ansible.windows.win_service:
+        name: MSSQLSERVER
+        state: restarted
+
+
+
+# caboodle install: On the Feature Selection page, select Database Engine Services, Full-Text and Semantic Extractions for Search, and Integration Services.

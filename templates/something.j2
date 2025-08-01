@@ -1,0 +1,19 @@
+#jinja2: trim_blocks:False
+USE [master]
+GO
+CREATE DATABASE $(NAME)
+ON
+PRIMARY
+    {% for i in range(1, 5) %}(NAME = $(NAME){{i}},
+    FILENAME = '$(DATAPATH){{i}}\mnt\{{dbname}}{{i}}.{% if i == 1 %}mdf{% else %}ndf{% endif %}',
+    SIZE = $(SIZE),
+    MAXSIZE = $(MAXSIZE),
+    FILEGROWTH = $(FILEGROWTH)){% if not loop.last %},{% endif %}
+    {% endfor %}
+LOG ON
+    (NAME = $(NAME)Log,
+    FILENAME = '$(LOGFILEPATH)\mnt\{{dbname}}.ldf',
+    SIZE = $(LOGSIZE),
+    MAXSIZE = $(LOGMAXSIZE),
+    FILEGROWTH = $(LOGFILEGROWTH));
+GO
