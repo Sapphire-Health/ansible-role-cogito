@@ -32,7 +32,7 @@
         InstanceName: MSSQLSERVER
         resource_name: SqlMaxDop
         Ensure: present
-        MaxDop: "{{ [hostvars[inventory_hostname].cpu_options.core_count | int * hostvars[inventory_hostname].cpu_options.threads_per_core | int, 8] | min }}"
+        MaxDop: "{{ [ansible_facts.processor_vcpus | int, 8] | min }}"
 #
 #    replaced by task below it
 #    for agent account ServiceType: SQLServerAgent
