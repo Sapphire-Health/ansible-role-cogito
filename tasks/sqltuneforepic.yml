@@ -46,13 +46,13 @@
     - name: Set engine account to service user
       ansible.windows.win_service:
         name: MSSQLSERVER
-        username: "{{ dsc_sqlsvcaccount }}"
+        username: "{{ user_sqlengine }}"
         password: "{{ lookup('ansible.builtin.env', 'LOCAL_ADMIN_PASSWORD') }}"
 
     - name: Set agent account to service user
       ansible.windows.win_service:
         name: SQL Server Agent (MSSQLSERVER)
-        username: "{{ dsc_sqlsvcaccount }}"
+        username: "{{ user_sqlagent }}"
         password: "{{ lookup('ansible.builtin.env', 'LOCAL_ADMIN_PASSWORD') }}"
 
     - name: Set index fill factor and max worker threads with T-SQL
