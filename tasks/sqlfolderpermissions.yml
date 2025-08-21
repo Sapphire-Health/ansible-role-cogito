@@ -1,128 +1,35 @@
-# idea - maybe we can just build an array w/ the variables, and then run a loop off the array
-#
 ---
 - name: Add tags to all tasks
   tags:
     - os
-    - registry
-    - tcp
     - clarity
     - caboodle
   block:
-    - name: Open permissions on sql install folders
-      ansible.windows.win_acl:
-        path: '{{ dsc_sqltempdbdir }}'
-        user: '{{ user_sqlengine }}'
-        rights: FullControl
-        type: allow
-        state: present
-        inherit: ContainerInherit, ObjectInherit
-        propagation: 'None'
-    - name: Open permissions on sql install folders
-      ansible.windows.win_acl:
-        path: '{{ dsc_sqltempdbdir }}'
-        user: '{{ dsc_sqlsysadminaccounts }}'
-        rights: FullControl
-        type: allow
-        state: present
-        inherit: ContainerInherit, ObjectInherit
-        propagation: 'None'
+    - name: Expand SQLinstall files into a list
+      ansible.builtin.set_fact:
+        sql_path_users: >-
+          {{ sql_path_users | default([]) +
+            [{ 'path': item,
+              'users': [
+                user_sqlengine
+              ] + dsc_sqlsysadminaccounts
+            }]
+          }}
+      loop:
+        - "{{ dsc_sqltempdbdir }}"
+        - "{{ dsc_sqltempdblogdir }}"
+        - "{{ dsc_installsqldatadir }}"
+        - "{{ dsc_sqlbackupdir }}"
+        - "{{ dsc_sqluserdbdir }}"
+        - "{{ dsc_sqluserdblogdir }}"
 
-    - name: Open permissions on sql install folders
+    - name: Configure permissions on sql install folders
       ansible.windows.win_acl:
-        path: '{{ dsc_sqltempdblogdir }}'
-        user: '{{ user_sqlengine }}'
+        path: '{{ item.0.path }}'
+        user: '{{ item.1 }}'
         rights: FullControl
         type: allow
         state: present
         inherit: ContainerInherit, ObjectInherit
         propagation: 'None'
-    - name: Open permissions on sql install folder
-      ansible.windows.win_acl:
-        path: '{{ dsc_sqltempdblogdir }}'
-        user: '{{ dsc_sqlsysadminaccounts }}'
-        rights: FullControl
-        type: allow
-        state: present
-        inherit: ContainerInherit, ObjectInherit
-        propagation: 'None'
-
-    - name: Open permissions on sql install folders
-      ansible.windows.win_acl:
-        path: '{{ dsc_installsqldatadir }}'
-        user: '{{ user_sqlengine }}'
-        rights: FullControl
-        type: allow
-        state: present
-        inherit: ContainerInherit, ObjectInherit
-        propagation: 'None'
-    - name: Open permissions on sql install folder
-      ansible.windows.win_acl:
-        path: '{{ dsc_installsqldatadir }}'
-        user: '{{ dsc_sqlsysadminaccounts }}'
-        rights: FullControl
-        type: allow
-        state: present
-        inherit: ContainerInherit, ObjectInherit
-        propagation: 'None'
-
-    - name: Open permissions on sql install folders
-      ansible.windows.win_acl:
-        path: '{{ dsc_sqlbackupdir }}'
-        user: '{{ user_sqlengine }}'
-        rights: FullControl
-        type: allow
-        state: present
-        inherit: ContainerInherit, ObjectInherit
-        propagation: 'None'
-    - name: Open permissions on sql install folder
-      ansible.windows.win_acl:
-        path: '{{ dsc_sqlbackupdir }}'
-        user: '{{ dsc_sqlsysadminaccounts }}'
-        rights: FullControl
-        type: allow
-        state: present
-        inherit: ContainerInherit, ObjectInherit
-        propagation: 'None'
-
-    - name: Open permissions on sql install folders
-      ansible.windows.win_acl:
-        path: '{{ dsc_sqluserdbdir }}'
-        user: '{{ user_sqlengine }}'
-        rights: FullControl
-        type: allow
-        state: present
-        inherit: ContainerInherit, ObjectInherit
-        propagation: 'None'
-    - name: Open permissions on sql install folder
-      ansible.windows.win_acl:
-        path: '{{ dsc_sqluserdbdir }}'
-        user: '{{ dsc_sqlsysadminaccounts }}'
-        rights: FullControl
-        type: allow
-        state: present
-        inherit: ContainerInherit, ObjectInherit
-        propagation: 'None'
-
-    - name: Open permissions on sql install folders
-      ansible.windows.win_acl:
-        path: '{{ dsc_sqluserdblogdir }}'
-        user: '{{ user_sqlengine }}'
-        rights: FullControl
-        type: allow
-        state: present
-        inherit: ContainerInherit, ObjectInherit
-        propagation: 'None'
-    - name: Open permissions on sql install folder
-      ansible.windows.win_acl:
-        path: '{{ dsc_sqluserdblogdir }}'
-        user: '{{ dsc_sqlsysadminaccounts }}'
-        rights: FullControl
-        type: allow
-        state: present
-        inherit: ContainerInherit, ObjectInherit
-        propagation: 'None'
-
-
-
-
+      loop: "{{ sql_path_users | subelements('users') }}"
