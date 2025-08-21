@@ -16,8 +16,8 @@
             }]
           }}
       loop:
-        - "{{ dsc_sqltempdbdir }}"
-        - "{{ dsc_sqltempdblogdir }}"
+#        - "{{ dsc_sqltempdbdir }}"
+#        - "{{ dsc_sqltempdblogdir }}"
         - "{{ dsc_installsqldatadir }}"
         - "{{ dsc_sqlbackupdir }}"
         - "{{ dsc_sqluserdbdir }}"
