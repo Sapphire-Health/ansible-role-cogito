@@ -51,7 +51,8 @@
 #          - "{{ clarity_user_datalink }}"
           - "{{ caboodle_user_execution_service }}"
           - "{{ caboodle_install_user }}"
-#          - "{{ slicerdicer_user }}"
+          - "{{ slicerdicer_user }}"
+          - "{{ user_sqlengine }}"
         state: present
 
 #    - name: Add user to performance log users group
