@@ -83,3 +83,12 @@
     - Caboodle
     - Clarity
     - database
+- name: Garbage task - do db creation a second time
+  ansible.builtin.include_tasks:
+    file: cogitodbcreation.yml
+  tags:
+    - SQL
+    - OS
+    - Caboodle
+    - Clarity
+    - database
