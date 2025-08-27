@@ -29,9 +29,7 @@ jobs:
             const projectId = "PVT_kwDOBKbEgM4A7pvO";
             const fieldId = "PVTSSF_lADOBKbEgM4A7pvOzgzxZA4";
             const optionId = "9f1e522d";
-
-            // itemId is available from the previous step output
-            const itemId = steps["add-to-project"].outputs.itemId;
+            const itemId = "${{ steps.add-to-project.outputs.itemId }}";
 
             await github.graphql(
               `mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
