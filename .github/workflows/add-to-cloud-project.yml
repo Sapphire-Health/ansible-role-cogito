@@ -20,3 +20,5 @@ jobs:
         with:
           project-url: https://github.com/orgs/Sapphire-Health/projects/2
           github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
+          fields: |
+            Team: Cogito
