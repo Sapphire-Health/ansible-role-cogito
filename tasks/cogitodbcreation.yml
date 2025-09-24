@@ -4,6 +4,16 @@
 # needs - caboodle changes:
 # If you are creating your staging database, set Auto Update Statistics to True and Auto Update Statistics Asynchronously to False. 
 # If you are creating your reporting database, set both Auto Update Statistics and Auto Update Statistics Asynchronously to True.
+# removed from 'Configure Epic best practices for SQL Databases'
+#
+# epic requires/recommends:
+#            ALTER DATABASE [$(NAME)] SET ACCELERATED_DATABASE_RECOVERY = ON
+#            (PERSISTENT_VERSION_STORE_FILEGROUP = [PRIMARY]);
+# epic doesn't comment on these:
+#            ALTER DATABASE [$(NAME)] SET DISABLE_BROKER; --unneeded message service. minor overhead. enabled by default
+#            ALTER DATABASE [$(NAME)] SET DATE_CORRELATION_OPTIMIZATION OFF; -- backend optimization for joins on dates of different types. Not good for high-transaction DBs. disabled by default
+
+
 ---
 - name: Add tags to all tasks
   tags:
@@ -42,7 +52,7 @@
             loop_var: db
 
     - name: Configure Epic best practices for SQL Databases
-      when: clarity_report_databases is defined
+      when: sql_dbs is defined
       block:
       - name: Configure SQL Database Files with T-SQL
         ansible.windows.win_dsc:
@@ -54,12 +64,13 @@
           SetQuery: |
             USE [master]
             GO
-            ALTER DATABASE [$(NAME)] MODIFY FILEGROUP [primary] AUTOGROW_ALL_FILES
+            IF DATABASEPROPERTYEX('$(NAME)', 'IsAutoGrowAllFiles') = 0
+            BEGIN
+              ALTER DATABASE $(NAME) MODIFY FILEGROUP [primary] AUTOGROW_ALL_FILES;;
+            END
             ALTER DATABASE [$(NAME)] SET MIXED_PAGE_ALLOCATION OFF;
-            ALTER DATABASE [$(NAME)] SET ACCELERATED_DATABASE_RECOVERY = ON
-            (PERSISTENT_VERSION_STORE_FILEGROUP = [PRIMARY]);
-            ALTER DATABASE $(NAME) SET QUERY_STORE = ON;
-            ALTER DATABASE $(NAME) SET QUERY_STORE (MAX_STORAGE_SIZE_MB = 4096, QUERY_CAPTURE_MODE = AUTO);
+            ALTER DATABASE [$(NAME)] SET QUERY_STORE = ON;
+            ALTER DATABASE [$(NAME)] SET QUERY_STORE (MAX_STORAGE_SIZE_MB = 4096, QUERY_CAPTURE_MODE = AUTO);
             ALTER DATABASE [$(NAME)] SET COMPATIBILITY_LEVEL = 160;
             ALTER DATABASE [$(NAME)] SET ANSI_NULL_DEFAULT OFF;
             ALTER DATABASE [$(NAME)] SET ANSI_NULLS OFF;
@@ -76,9 +87,7 @@
             ALTER DATABASE [$(NAME)] SET NUMERIC_ROUNDABORT OFF;
             ALTER DATABASE [$(NAME)] SET QUOTED_IDENTIFIER OFF;
             ALTER DATABASE [$(NAME)] SET RECURSIVE_TRIGGERS OFF;
-            ALTER DATABASE [$(NAME)] SET DISABLE_BROKER;
             ALTER DATABASE [$(NAME)] SET AUTO_UPDATE_STATISTICS_ASYNC OFF;
-            ALTER DATABASE [$(NAME)] SET DATE_CORRELATION_OPTIMIZATION OFF;
             ALTER DATABASE [$(NAME)] SET PARAMETERIZATION SIMPLE;
             ALTER DATABASE [$(NAME)] SET READ_COMMITTED_SNAPSHOT OFF;
             ALTER DATABASE [$(NAME)] SET READ_WRITE;
@@ -87,20 +96,25 @@
             ALTER DATABASE [$(NAME)] SET PAGE_VERIFY CHECKSUM;
             ALTER DATABASE [$(NAME)] SET TARGET_RECOVERY_TIME = 60 SECONDS;
             ALTER DATABASE [$(NAME)] SET DELAYED_DURABILITY = DISABLED;
+            USE [$(NAME)]
+            GO
+            ALTER DATABASE SCOPED CONFIGURATION SET TSQL_SCALAR_UDF_INLINING = OFF;
           GetQuery: |
             SELECT NULL;
           TestQuery: |
-            USE [msdb]
-            GO
-            IF EXISTS (
-              SELECT 1
-              FROM sys.databases
-              WHERE name = '$(NAME)'
-            )
-              PRINT 'Did not find $(NAME) role'
-            ELSE
-              RAISERROR ('Found $(NAME) database', 16, 1)
-            GO
+            SELECT NULL;
+#            USE [msdb]
+#            GO
+#            IF EXISTS (
+#              SELECT 1
+#              FROM sys.databases
+#              WHERE name = '$(NAME)'
+#            )
+#              PRINT 'Did not find $(NAME) role'
+#            ELSE
+#              RAISERROR ('Found $(NAME) database', 16, 1)
+#            GO
         loop: "{{ sql_dbs }}"
         loop_control:
           loop_var: db
+
