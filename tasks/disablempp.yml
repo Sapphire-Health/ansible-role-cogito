@@ -11,9 +11,5 @@
     - clarity
     - caboodle
   block:
-    - name: Disable Memory Pressure Protection
-      ansible.windows.win_regedit:
-        path: HKLM:\SYSTEM\CurrentControlSet\services\tcpip\Parameters
-        name: EnableMPP
-        data: 0
-        type: dword
+    - name: Disable Memory Pressure Protection (always runs)
+      ansible.windows.win_shell: netsh int tcp set security mpp=disabled
