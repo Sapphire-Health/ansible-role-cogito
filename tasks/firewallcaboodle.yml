@@ -30,3 +30,11 @@
         localport: 29987-30987
         protocol: tcp
         remoteport: any
+    - name: Enable DTC firewall rule
+      community.windows.win_firewall_rule:
+        enabled: true
+        group: Distributed Transaction Coordinator
+    - name: Set DTC network and security configuration
+      ansible.windows.win_powershell:
+        script: |
+          Set-DtcNetworkSetting -DtcName "Local" -InboundTransactionsEnabled 1 -OutboundTransactionsEnabled 1 -RemoteClientAccessEnabled 1 -LUTransactionsEnabled 1 -AuthenticationLevel "Mutual" -Confirm:$False
