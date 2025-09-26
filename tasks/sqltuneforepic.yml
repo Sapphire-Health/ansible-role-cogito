@@ -76,7 +76,7 @@
           FROM sys.configurations
           WHERE name IN ('fill factor (%)', 'max worker threads');
         TestQuery: |
-          SELECT
+          SELECT NULL;
       register: sql_config_updated
 
     - name: Set max memory for Clarity with T-SQL
@@ -140,11 +140,34 @@
       register: sql_config_updated
 
     - name: Restart SQL Server if fill factor, max worker threads, or max memory was changed
-      when: sql_config_updated.changed
+      when: sql_config_updated.changed 
       ansible.windows.win_service:
         name: MSSQLSERVER
         state: restarted
 
+    - name: Check for pattern match - clarity
+      debug:
+        msg: "Found item: {{ item.name }}"
+      loop: "{{ sql_dbs }}"
+      loop_control:
+        break_when: 
+          - item.name is search("clarity", ignorecase=True)
 
+# task to loop through sql_dbs.name 
+# if clarity match -> end loop, register for print clarity
+# if caboodle match -> same but caboodle
+# loop: sql_dbs.name 
+
+# task to print "caboodle!"
+
+# task to print "clarity!"
+#    - name: This task runs if there is a clarity DB
+#      debug:
+#        msg: "Clarity found in the array!"
+#      when: my_variable is search("^foo.*bar$") in sql_dbs.name
+
+
+# https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_loops.html#breaking-out-of-a-loop - see break_when
+# consider set_fact
 
 # caboodle install: On the Feature Selection page, select Database Engine Services, Full-Text and Semantic Extractions for Search, and Integration Services.
