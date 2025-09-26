@@ -4,6 +4,7 @@
 # needs - caboodle changes:
 # If you are creating your staging database, set Auto Update Statistics to True and Auto Update Statistics Asynchronously to False. 
 # If you are creating your reporting database, set both Auto Update Statistics and Auto Update Statistics Asynchronously to True.
+#
 # removed from 'Configure Epic best practices for SQL Databases'
 #
 # epic requires/recommends:

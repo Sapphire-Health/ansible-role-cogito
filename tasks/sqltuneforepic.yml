@@ -78,19 +78,35 @@
         TestQuery: |
           SELECT NULL;
       register: sql_config_updated
+    
+# https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_loops.html#breaking-out-of-a-loop - see break_when
+# consider set_fact
 
-    - name: Set max memory for Clarity with T-SQL
-      when: clarity_report_databases is defined
+    - name: Check for pattern match - clarity. Set maxmempercent if matching.
+      set_fact:
+        maxmempercent: "0.83"
+      loop: "{{ sql_dbs }}"
+      when: item.name is search("clarity", ignorecase=True)
+
+    - name: Check for pattern match - caboodle. Set maxmempercent if matching.
+      set_fact:
+        maxmempercent: "0.87"
+      loop: "{{ sql_dbs }}"
+      when: item.name is search("caboodle", ignorecase=True)
+
+    - name: Set max memory for Clarity or caboodle with T-SQL
+      when: maxmempercent is defined
       ansible.windows.win_dsc:
         resource_name: SqlScriptQuery
         Id: "ConfigureIndexFillandMaxWorkerThreads"
         InstanceName: "{{ dsc_instancename }}"
+        Variable: "MAXMEMPERCENT={{ maxmempercent }}"
         Encrypt: Optional
         SetQuery: |
           DECLARE @memory INT;
           EXEC sp_configure 'show advanced options', 1;
           RECONFIGURE;
-          SELECT @memory = (0.83)*physical_memory_kb/1024 from sys.dm_os_sys_info
+          SELECT @memory = $(MAXMEMPERCENT)*physical_memory_kb/1024 from sys.dm_os_sys_info
           EXEC sys.sp_configure N'max server memory (MB)', @memory
           RECONFIGURE WITH OVERRIDE
         GetQuery: |
@@ -98,45 +114,7 @@
           FROM sys.configurations
           WHERE name = 'max server memory (MB)';
         TestQuery: |
-          SELECT 
-              CASE 
-                  WHEN cfg.value_in_use = CAST(0.83 * os.physical_memory_kb / 1024 AS INT) 
-                  THEN NULL 
-                  ELSE cfg.value_in_use 
-              END AS max_server_memory_override
-          FROM sys.configurations AS cfg
-          CROSS JOIN sys.dm_os_sys_info AS os
-          WHERE cfg.name = 'max server memory (MB)';
-      register: sql_config_updated
-
-    - name: Set max memory for Caboodle with T-SQL
-      when: caboodle_report_databases is defined
-      ansible.windows.win_dsc:
-        resource_name: SqlScriptQuery
-        Id: "ConfigureIndexFillandMaxWorkerThreads"
-        InstanceName: "{{ dsc_instancename }}"
-        Encrypt: Optional
-        SetQuery: |
-          DECLARE @memory INT;
-          EXEC sp_configure 'show advanced options', 1;
-          RECONFIGURE;
-          SELECT @memory = (0.87)*physical_memory_kb/1024 from sys.dm_os_sys_info
-          EXEC sys.sp_configure N'max server memory (MB)', @memory
-          RECONFIGURE WITH OVERRIDE
-        GetQuery: |
-          SELECT name, value, value_in_use
-          FROM sys.configurations
-          WHERE name = 'max server memory (MB)';
-        TestQuery: |
-          SELECT 
-              CASE 
-                  WHEN cfg.value_in_use = CAST(0.87 * os.physical_memory_kb / 1024 AS INT) 
-                  THEN NULL 
-                  ELSE cfg.value_in_use 
-              END AS max_server_memory_override
-          FROM sys.configurations AS cfg
-          CROSS JOIN sys.dm_os_sys_info AS os
-          WHERE cfg.name = 'max server memory (MB)';
+          SELECT NULL;
       register: sql_config_updated
 
     - name: Restart SQL Server if fill factor, max worker threads, or max memory was changed
@@ -144,30 +122,5 @@
       ansible.windows.win_service:
         name: MSSQLSERVER
         state: restarted
-
-    - name: Check for pattern match - clarity
-      debug:
-        msg: "Found item: {{ item.name }}"
-      loop: "{{ sql_dbs }}"
-      loop_control:
-        break_when: 
-          - item.name is search("clarity", ignorecase=True)
-
-# task to loop through sql_dbs.name 
-# if clarity match -> end loop, register for print clarity
-# if caboodle match -> same but caboodle
-# loop: sql_dbs.name 
-
-# task to print "caboodle!"
-
-# task to print "clarity!"
-#    - name: This task runs if there is a clarity DB
-#      debug:
-#        msg: "Clarity found in the array!"
-#      when: my_variable is search("^foo.*bar$") in sql_dbs.name
-
-
-# https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_loops.html#breaking-out-of-a-loop - see break_when
-# consider set_fact
 
 # caboodle install: On the Feature Selection page, select Database Engine Services, Full-Text and Semantic Extractions for Search, and Integration Services.
