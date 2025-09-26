@@ -15,3 +15,9 @@
         maximum_size: "{{ cogito_pagefilesize }}"
         state: present
         automatic: false
+    - name: Set Startup and Recovery settings to use Kernel-only Memory Dump
+      win_regedit:
+        path: HKLM:\SYSTEM\CurrentControlSet\Control\CrashControl
+        name: CrashDumpEnabled
+        data: 2
+        type: dword
