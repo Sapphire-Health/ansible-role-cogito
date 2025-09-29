@@ -10,6 +10,11 @@
     - firewall
     - caboodle
   block:
+    - name: Check whether this is a Caboodle VM. If not, skip the rest of this task
+      set_fact:
+        isCaboodle: true
+      loop: "{{ sql_dbs }}"
+      when: item.name is search("caboodle", ignorecase=True)
     - name: DAC Port
       community.windows.win_firewall_rule:
         action: allow
@@ -20,6 +25,7 @@
         localport: 1434
         protocol: tcp
         remoteport: any
+      when: isCaboodle is defined
     - name: Execution Service
       community.windows.win_firewall_rule:
         action: allow
@@ -30,11 +36,14 @@
         localport: 29987-30987
         protocol: tcp
         remoteport: any
+      when: isCaboodle is defined
     - name: Enable DTC firewall rule
       community.windows.win_firewall_rule:
         enabled: true
         group: Distributed Transaction Coordinator
+      when: isCaboodle is defined
     - name: Set DTC network and security configuration
       ansible.windows.win_powershell:
         script: |
           Set-DtcNetworkSetting -DtcName "Local" -InboundTransactionsEnabled 1 -OutboundTransactionsEnabled 1 -RemoteClientAccessEnabled 1 -LUTransactionsEnabled 1 -AuthenticationLevel "Mutual" -Confirm:$False
+      when: isCaboodle is defined

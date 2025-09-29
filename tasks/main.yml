@@ -83,3 +83,10 @@
     - Caboodle
     - Clarity
     - database
+- name: Install SSISDB
+  ansible.builtin.include_tasks:
+    file: SSISDBinstall.yml
+  tags:
+    - SQL
+    - Caboodle
+    - database
