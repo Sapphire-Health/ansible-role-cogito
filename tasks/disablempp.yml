@@ -11,5 +11,11 @@
     - clarity
     - caboodle
   block:
-    - name: Disable Memory Pressure Protection (always runs)
+    - name: Check whether Memory Pressure Protection is disabled
+      ansible.windows.win_shell: netsh int tcp show security | findstr /C:"Memory Pressure Protection"
+      register: mpp_check
+      changed_when: false
+      failed_when: false
+    - name: Disable Memory Pressure Protection
       ansible.windows.win_shell: netsh int tcp set security mpp=disabled
+      when: mpp_check.stdout is not search("disabled")

@@ -6,7 +6,11 @@
     - database
   block:
     - name: Import the sql_install role
-      ansible.builtin.import_role:
+      vars:
+        sql_install_instance_name: "{{ dsc_instancename }}"
+        instance_name_var: "{{ dsc_instancename }}"
+        sql_install_ssisdb_password: th!ng4m4b0b
+        sql_install_version: 2022
+      ansible.builtin.include_role:
         name: automatesql.mssql.sql_install
-
-        
+        tasks_from: integrationservicescatalog.yml
