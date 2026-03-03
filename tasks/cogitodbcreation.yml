@@ -30,7 +30,7 @@
           ansible.windows.win_dsc:
             resource_name: SqlScriptQuery
             Id: "ConfigureDatabaseFiles"
-            InstanceName: "{{ dsc_instancename }}"
+            InstanceName: "{{ microsoft_sql_dsc_instancename }}"
             Variable: "NAME={{ db.name }}, SIZE={{ db.db_size }}, MAXSIZE={{ db.db_max_size }}, FILEGROWTH={{ db.db_growth }}, DATAPATH={{ db.data_path }},LOGSIZE={{ db.log_size }}, LOGMAXSIZE={{ db.log_max_size }}, LOGFILEGROWTH={{ db.log_growth }}, LOGFILEPATH={{ db.log_path }}"
             Encrypt: Optional
             SetQuery: "{{ lookup('ansible.builtin.template', 'dbcreationscript.j2') }}"
@@ -59,7 +59,7 @@
         ansible.windows.win_dsc:
           resource_name: SqlScriptQuery
           Id: "TuneDatabaseFiles"
-          InstanceName: "{{ dsc_instancename }}"
+          InstanceName: "{{ microsoft_sql_dsc_instancename }}"
           Variable: "NAME={{ db.name }}, RECOVERYMODE={{ db.recovery_model }}"
           Encrypt: Optional
           SetQuery: |

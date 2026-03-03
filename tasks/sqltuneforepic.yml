@@ -46,20 +46,20 @@
     - name: Set engine account to service user
       ansible.windows.win_service:
         name: MSSQLSERVER
-        username: "{{ user_sqlengine }}"
+        username: "{{ cogito_user_sqlengine }}"
         password: "{{ lookup('ansible.builtin.env', 'LOCAL_ADMIN_PASSWORD') }}"
 
     - name: Set agent account to service user
       ansible.windows.win_service:
         name: SQL Server Agent (MSSQLSERVER)
-        username: "{{ user_sqlagent }}"
+        username: "{{ cogito_user_sqlagent }}"
         password: "{{ lookup('ansible.builtin.env', 'LOCAL_ADMIN_PASSWORD') }}"
 
     - name: Set index fill factor and max worker threads with T-SQL
       ansible.windows.win_dsc:
         resource_name: SqlScriptQuery
         Id: "ConfigureIndexFillandMaxWorkerThreads"
-        InstanceName: "{{ dsc_instancename }}"
+        InstanceName: "{{ microsoft_sql_dsc_instancename }}"
         Encrypt: Optional
         SetQuery: |
           EXEC sys.sp_configure 'show advanced options', 1;
@@ -99,7 +99,7 @@
       ansible.windows.win_dsc:
         resource_name: SqlScriptQuery
         Id: "ConfigureIndexFillandMaxWorkerThreads"
-        InstanceName: "{{ dsc_instancename }}"
+        InstanceName: "{{ microsoft_sql_dsc_instancename }}"
         Variable: "MAXMEMPERCENT={{ maxmempercent }}"
         Encrypt: Optional
         SetQuery: |

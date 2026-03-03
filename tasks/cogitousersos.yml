@@ -12,8 +12,8 @@
       ansible.windows.win_user_right:
         name: SeServiceLogonRight
         users:
-          - "{{ user_sqlengine }}"
-          - "{{ user_sqlagent }}"
+          - "{{ cogito_user_sqlengine }}"
+          - "{{ cogito_user_sqlagent }}"
 #          - "{{ clarity_user_console }}"
 #          - "{{ clarity_user_datalink }}"
 #          - "{{ slicerdicer_user }}"
@@ -23,41 +23,41 @@
       ansible.windows.win_user_right:
         name: SeLockMemoryPrivilege
         users:
-          - "{{ user_sqlengine }}"
-          - "{{ user_sqlagent }}"
+          - "{{ cogito_user_sqlengine }}"
+          - "{{ cogito_user_sqlagent }}"
         action: add
 
     - name: Perform volume maintenance tasks
       ansible.windows.win_user_right:
         name: SeManageVolumePrivilege
         users:
-          - "{{ user_sqlengine }}"
-          - "{{ user_sqlagent }}"
+          - "{{ cogito_user_sqlengine }}"
+          - "{{ cogito_user_sqlagent }}"
         action: add
 
     - name: Replace a process level token
       ansible.windows.win_user_right:
         name: SeAssignPrimaryTokenPrivilege
         users:
-          - "{{ user_sqlengine }}"
-          - "{{ user_sqlagent }}"
+          - "{{ cogito_user_sqlengine }}"
+          - "{{ cogito_user_sqlagent }}"
         action: add
 
     - name: Add user to local admin group
       ansible.windows.win_group_membership:
         name: Administrators
         members:
-#          - "{{ clarity_user_console }}"
-#          - "{{ clarity_user_datalink }}"
-          - "{{ caboodle_user_execution_service }}"
-          - "{{ caboodle_install_user }}"
-          - "{{ slicerdicer_user }}"
-          - "{{ user_sqlengine }}"
+          - "{{ cogito_clarity_user_console }}"
+          - "{{ cogito_clarity_user_datalink }}"
+          - "{{ cogito_caboodle_user_execution_service }}"
+          - "{{ cogito_caboodle_install_user }}"
+          - "{{ cogito_slicerdicer_user }}"
+          - "{{ cogito_user_sqlengine }}"
         state: present
 
 #    - name: Add user to performance log users group
 #      ansible.windows.win_group_membership:
 #        name: Performance Log Users
 #        members:
-#          - "{{ slicerdicer_user }}"
+#          - "{{ cogito_slicerdicer_user }}"
 #        state: present

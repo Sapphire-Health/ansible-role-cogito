@@ -11,17 +11,17 @@
           {{ sql_path_users | default([]) +
             [{ 'path': item,
               'users': [
-                user_sqlengine
-              ] + dsc_sqlsysadminaccounts
+                cogito_user_sqlengine
+              ] + microsoft_sql_dsc_sqlsysadminaccounts
             }]
           }}
       loop:
 #        - "{{ dsc_sqltempdbdir }}"
 #        - "{{ dsc_sqltempdblogdir }}"
-        - "{{ dsc_installsqldatadir }}"
-        - "{{ dsc_sqlbackupdir }}"
-        - "{{ dsc_sqluserdbdir }}"
-        - "{{ dsc_sqluserdblogdir }}"
+        - "{{ microsoft_sql_dsc_installsqldatadir }}"
+        - "{{ microsoft_sql_dsc_sqlbackupdir }}"
+        - "{{ microsoft_sql_dsc_sqluserdbdir }}"
+        - "{{ microsoft_sql_dsc_sqluserdblogdir }}"
 
     - name: Configure permissions on sql install folders
       ansible.windows.win_acl:
